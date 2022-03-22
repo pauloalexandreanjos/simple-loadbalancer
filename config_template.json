@@ -1,0 +1,55 @@
+{
+    "serverName": "My Simple Loadbalancer",
+    "services": [
+        {
+            "type": "LOADBALANCER",
+            "id": "0f04f1f9-8aaf-4eaf-8109-1dbb47dbff36",
+            "name": "My Service v1",
+            "token": "my-service-token_v1",
+            "path": "myservice/v1",
+            "defaultTaskPath": "if present populate the taskPath on task register, else = servicePath",
+            "tasks": [
+                {
+                    "serviceToken": "my-service-token_v1",
+                    "id": "cbd32892-8115-4ee9-b556-c33f5def0ce1",
+                    "address": "localhost:1234",
+                    "taskPath": "if present is the custom task path, else use service's defaultTaskPath" ,
+                    "status": "HEALTHY"
+                },
+                {
+                    "serviceToken": "my-service-token_v1",
+                    "taskId": "7a02707c-6929-4a07-bcb9-a0b8924cb063",
+                    "address": "localhost:1235",
+                    "status": "UNKNOWN"
+                },
+                {
+                    "serviceToken": "my-service-token_v1",
+                    "taskId": "96e7ed06-ace8-46f2-9658-348ad5f06db6",
+                    "address": "localhost:1236",
+                    "status": "DEGRADED"
+                }
+            ],
+            "rules": [
+                {
+                    "ruleId": "eb2bbb34-b775-4e0f-a0e5-f2aea684b909",
+                    "route": "/",
+                    "rate": "format is [second minute hour day week], 0 = unlimited EX: 1 0 120 = 1 per second unlimited por minute but only 120 per hour - bussiness rule you cant set a value lower than a previous one in limit format",
+                    "maxPayloadSize": "value in bytes Ex: 1024 = 1kb, 1024 * 1024 = 1mb",
+                    "keywordFilter": ["list","of","strings","not","allowed"]
+                }
+            ]
+        },
+        {
+            "type": "STATIC_ROUTE",
+            "serviceName": "My Service Static",
+            "servicePath": "myservice/v1",
+            "targetAddress": "localhost:1237"
+        },
+        {
+            "type": "STATIC_FILES",
+            "serviceName": "My Service Static",
+            "servicePath": "myservice/v1",
+            "targetAddress": "localhost:1237"
+        }
+    ]
+}
