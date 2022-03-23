@@ -24,16 +24,24 @@ type Server struct {
 
 func NewServer(name string) *Server {
 
+	services := make([]Service, 0)
+	server := Server{
+		Name:     name,
+		Services: services,
+	}
+
+	return &server
+}
+
+func (server *Server) MockServer() {
 	tasks := make([]Task, 0)
 	tasks = append(tasks, Task{
 		ServiceToken: "my-service-token_v1",
 		Id:           "1304f5ec-aa4f-11ec-b909-0242ac120002",
-		Address:      "http://localhost:3002",
+		Address:      "http://localhost:8000",
 		Status:       Healthy,
 	})
-
-	services := make([]Service, 0)
-	services = append(services, Service{
+	server.Services = append(server.Services, Service{
 		Type:  LoadBalancer,
 		Id:    "be2d3f4c-eec7-4cab-a782-6c262e6f04d0",
 		Name:  "My Service V1",
@@ -42,13 +50,6 @@ func NewServer(name string) *Server {
 		Tasks: tasks,
 		Rules: make([]Rule, 0),
 	})
-
-	server := Server{
-		Name:     name,
-		Services: services,
-	}
-
-	return &server
 }
 
 type Service struct {

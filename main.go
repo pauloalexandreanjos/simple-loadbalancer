@@ -6,10 +6,8 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"os"
 	"time"
 
-	"github.com/go-redis/redis/v8"
 	"github.com/joho/godotenv"
 	"github.com/pauloalexandreanjos/simple-loadbalancer/models"
 )
@@ -27,12 +25,15 @@ func main() {
 	printBanner()
 
 	server = models.NewServer("My Simple Loadbalancer")
+	server.MockServer()
+
+	go startServerApi()
 
 	for _, service := range server.Services {
 
 		formattedPath := service.Path
 
-		client := &http.Client{}
+		client := getHttpClient()
 
 		log.Printf("Adding service %s at path %s", service.Name, formattedPath)
 		http.HandleFunc(formattedPath, func(w http.ResponseWriter, reqSrc *http.Request) {
@@ -52,7 +53,6 @@ func main() {
 			req.Header = reqSrc.Header
 			req.Host = reqSrc.Host
 			req.Body = reqSrc.Body
-			req.Header.Del("Accept-Encoding")
 
 			resp, err := client.Do(req)
 			if err != nil {
@@ -89,53 +89,4 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-}
-
-func normalizePath(path string) string {
-
-	if path[len(path)-1] != '/' {
-		log.Println("Formatou!")
-		return fmt.Sprintf("%s%s", path, "/")
-	}
-
-	return path
-}
-
-func testRedis() {
-	log.Println("Testing REDIS...")
-
-	redisUrl := os.Getenv("REDIS_URL")
-	redisPass := os.Getenv("REDIS_PASS")
-
-	client := redis.NewClient(&redis.Options{
-		Addr:     redisUrl,
-		Password: redisPass,
-		DB:       0,
-	})
-
-	pong, err := client.Ping(ctx).Result()
-	fmt.Println(pong, err)
-
-	err = client.Set(ctx, "name", "Elliot", 0).Err()
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	saved, err := client.Get(ctx, "name").Result()
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	fmt.Println("Returned:", saved)
-	log.Println("Test finished!")
-}
-
-func printBanner() {
-	log.Println(`Starting...`)
-	log.Println(` __ _                 _          __    ___`)
-	log.Println(`/ _(_)_ __ ___  _ __ | | ___    / /   / __\`)
-	log.Println(`\ \| | '_ ' _ \| '_ \| |/ _ \  / /   /__\//`)
-	log.Println(`_\ \ | | | | | | |_) | |  __/ / /___/ \/  \`)
-	log.Println(`\__/_|_| |_| |_| .__/|_|\___| \____/\_____/`)
-	log.Println(`               |_|                        `)
 }
