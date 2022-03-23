@@ -8,6 +8,11 @@
             "token": "my-service-token_v1",
             "path": "myservice/v1",
             "defaultTaskPath": "if present populate the taskPath on task register, else = servicePath",
+            "instances": {
+                "min": 2,
+                "max": 10,
+                "managed": true
+            },
             "tasks": [
                 {
                     "serviceToken": "my-service-token_v1",

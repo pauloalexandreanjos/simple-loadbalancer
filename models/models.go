@@ -22,24 +22,58 @@ type Server struct {
 	Services []Service
 }
 
+func NewServer(name string) *Server {
+
+	tasks := make([]Task, 0)
+	tasks = append(tasks, Task{
+		ServiceToken: "my-service-token_v1",
+		Id:           "1304f5ec-aa4f-11ec-b909-0242ac120002",
+		Address:      "http://localhost:3002",
+		Status:       Healthy,
+	})
+
+	services := make([]Service, 0)
+	services = append(services, Service{
+		Type:  LoadBalancer,
+		Id:    "be2d3f4c-eec7-4cab-a782-6c262e6f04d0",
+		Name:  "My Service V1",
+		Token: "my-service-token_v1",
+		Path:  "/main.go",
+		Tasks: tasks,
+		Rules: make([]Rule, 0),
+	})
+
+	server := Server{
+		Name:     name,
+		Services: services,
+	}
+
+	return &server
+}
+
 type Service struct {
 	Type            ServiceType
-	Id              string // "0f04f1f9-8aaf-4eaf-8109-1dbb47dbff36",
-	Name            string //"My Service v1",
-	Token           string //"my-service-token_v1",
-	Path            string //"myservice/v1",
-	DefaultTaskPath string //"if present populate the taskPath on task register, else = servicePath",
+	Id              string
+	Name            string
+	Token           string
+	Path            string
+	DefaultTaskPath string
 	Tasks           []Task
 	Rules           []Rule
 }
 
 type Task struct {
-	serviceToken string // "my-service-token_v1",
-	id           string // "cbd32892-8115-4ee9-b556-c33f5def0ce1",
-	address      string // "localhost:1234",
-	taskPath     string // "if present is the custom task path, else use service's defaultTaskPath" ,
-	status       string // "HEALTHY"
+	ServiceToken string
+	Id           string
+	Address      string
+	TaskPath     string
+	Status       TaskStatus
 }
 
 type Rule struct {
+	Id             string
+	Route          string
+	Rate           string
+	MaxPayloadSize string
+	KeywordFilter  string
 }
