@@ -13,5 +13,5 @@ func getTask(serviceToken string) (*models.Task, error) {
 		}
 	}
 
-	return nil, errors.New("Task  not found!")
+	return nil, errors.New("Task not found!")
 }

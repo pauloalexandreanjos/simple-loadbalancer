@@ -38,10 +38,7 @@ func main() {
 		log.Printf("Adding service %s at path %s", service.Name, formattedPath)
 		http.HandleFunc(formattedPath, func(w http.ResponseWriter, reqSrc *http.Request) {
 
-			task, err := getTask(service.Token)
-			if err != nil {
-				log.Println(err)
-			}
+			task := service.NextTask()
 
 			start := time.Now()
 			req, err := http.NewRequest(reqSrc.Method, fmt.Sprintf("%s%s", task.Address, formattedPath), reqSrc.Body)
@@ -61,7 +58,7 @@ func main() {
 
 			fmt.Println("Request took", time.Now().Sub(start))
 			defer resp.Body.Close()
-			// TODO Requesting is tooking so long, 1ms without balancer vs 300ms with balancer
+			// TODO Requesting is tooking so long(only in windows), 1ms without balancer vs 300ms with balancer
 			// Maybe trying with standart TCP connection ou customizing http client
 
 			_, err = io.Copy(w, resp.Body)
@@ -72,14 +69,6 @@ func main() {
 			log.Printf("Request received at %s with method [%s] and host [%s] and URL [%s] and cookies %s", req.RequestURI, req.Method, req.Host, req.URL, req.Cookies())
 		})
 	}
-
-	// http.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
-	// 	log.Printf("Request received at / with method [%s] and host [%s] and URL [%s] and cookies %s", req.Method, req.Host, req.URL, req.Cookies())
-	// })
-
-	// http.HandleFunc("/teste/", func(w http.ResponseWriter, req *http.Request) {
-	// 	log.Printf("Request received at /teste with method [%s] and host [%s] and URL [%s] and cookies %s", req.Method, req.Host, req.URL, req.Cookies())
-	// })
 
 	testRedis()
 
