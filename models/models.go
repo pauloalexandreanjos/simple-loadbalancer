@@ -1,5 +1,10 @@
 package models
 
+import (
+	"errors"
+	"log"
+)
+
 type ServiceType int16
 type TaskStatus int16
 
@@ -33,6 +38,16 @@ func NewServer(name string) *Server {
 	return &server
 }
 
+func (server *Server) GetService(serviceToken string) (*Service, error) {
+	for _, service := range server.Services {
+		if service.Token == serviceToken {
+			return &service, nil
+		}
+	}
+
+	return nil, errors.New("Service not found!")
+}
+
 func (server *Server) MockServer() {
 	tasks := make([]Task, 0)
 	tasks = append(tasks, Task{
@@ -41,15 +56,37 @@ func (server *Server) MockServer() {
 		Address:      "http://localhost:8000",
 		Status:       Healthy,
 	})
-	server.Services = append(server.Services, Service{
-		Type:  LoadBalancer,
-		Id:    "be2d3f4c-eec7-4cab-a782-6c262e6f04d0",
-		Name:  "My Service V1",
-		Token: "my-service-token_v1",
-		Path:  "/main.go",
-		Tasks: tasks,
-		Rules: make([]Rule, 0),
+	tasks = append(tasks, Task{
+		ServiceToken: "my-service-token_v1",
+		Id:           "77b242a6-8ffe-464e-81f8-79fc9b1fd843",
+		Address:      "http://localhost:8000",
+		Status:       Healthy,
 	})
+	server.Services = append(server.Services, Service{
+		Type:     LoadBalancer,
+		Id:       "be2d3f4c-eec7-4cab-a782-6c262e6f04d0",
+		Name:     "My Service V1",
+		Token:    "my-service-token_v1",
+		Path:     "/main.go",
+		Tasks:    tasks,
+		LastTask: -1,
+		Rules:    make([]Rule, 0),
+	})
+}
+
+func (service *Service) NextTask() *Task {
+	tasksCount := len(service.Tasks)
+
+	if tasksCount-1 == service.LastTask {
+		service.LastTask = 0
+	} else {
+		service.LastTask += 1
+	}
+
+	task := &service.Tasks[service.LastTask]
+
+	log.Printf("Found Task %s\n", task.Id)
+	return task
 }
 
 type Service struct {
@@ -61,6 +98,7 @@ type Service struct {
 	DefaultTaskPath string
 	Tasks           []Task
 	Rules           []Rule
+	LastTask        int
 }
 
 type Task struct {

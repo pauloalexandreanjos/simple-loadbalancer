@@ -38,10 +38,9 @@ func main() {
 		log.Printf("Adding service %s at path %s", service.Name, formattedPath)
 		http.HandleFunc(formattedPath, func(w http.ResponseWriter, reqSrc *http.Request) {
 
-			var task models.Task
-
-			for _, t := range service.Tasks {
-				task = t
+			task, err := getTask(service.Token)
+			if err != nil {
+				log.Println(err)
 			}
 
 			start := time.Now()
