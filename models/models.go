@@ -15,21 +15,21 @@ const (
 )
 
 const (
-	Healthy  TaskStatus = 0
-	Degraded            = 1
-	Unknown             = 2
+	Unknown  TaskStatus = 0
+	Healthy             = 1
+	Degraded            = 2
 	NotReady            = 3
 	Live                = 4
 )
 
 type Server struct {
 	Name     string
-	Services []Service
+	Services []*Service
 }
 
 func NewServer(name string) *Server {
 
-	services := make([]Service, 0)
+	services := make([]*Service, 0)
 	server := Server{
 		Name:     name,
 		Services: services,
@@ -39,9 +39,9 @@ func NewServer(name string) *Server {
 }
 
 func (server *Server) GetService(serviceToken string) (*Service, error) {
-	for _, service := range server.Services {
+	for i, service := range server.Services {
 		if service.Token == serviceToken {
-			return &service, nil
+			return server.Services[i], nil
 		}
 	}
 
@@ -62,7 +62,7 @@ func (server *Server) MockServer() {
 		Address:      "http://localhost:8000",
 		Status:       Healthy,
 	})
-	server.Services = append(server.Services, Service{
+	server.Services = append(server.Services, &Service{
 		Type:     LoadBalancer,
 		Id:       "be2d3f4c-eec7-4cab-a782-6c262e6f04d0",
 		Name:     "My Service V1",
@@ -87,6 +87,10 @@ func (service *Service) NextTask() *Task {
 
 	log.Printf("Found Task %s\n", task.Id)
 	return task
+}
+
+func (service *Service) AddTask(task *Task) {
+	service.Tasks = append(service.Tasks, task)
 }
 
 type Service struct {

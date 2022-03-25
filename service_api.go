@@ -8,7 +8,7 @@ import (
 	"github.com/pauloalexandreanjos/simple-loadbalancer/models"
 )
 
-func startServerApi() {
+func startServerApi(server *models.Server) {
 	mux := http.NewServeMux()
 
 	log.Println("Starting API...")
@@ -42,7 +42,7 @@ func startServerApi() {
 			return
 		}
 
-		service.Tasks = append(service.Tasks, &models.Task{})
+		service.AddTask(&models.Task{})
 	})
 
 	mux.HandleFunc("/status", func(w http.ResponseWriter, req *http.Request) {

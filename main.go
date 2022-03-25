@@ -27,7 +27,7 @@ func main() {
 	server = models.NewServer("My Simple Loadbalancer")
 	server.MockServer()
 
-	go startServerApi()
+	go startServerApi(server)
 
 	for _, service := range server.Services {
 
