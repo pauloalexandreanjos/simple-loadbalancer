@@ -25,7 +25,14 @@ func main() {
 	printBanner()
 
 	server = models.NewServer("My Simple Loadbalancer")
-	server.MockServer()
+	server.MockService()
+	server.MockTask()
+	server.MockTask()
+	server.MockTask()
+	server.MockTask()
+	server.MockTask()
+	server.MockTask()
+	server.MockTask()
 
 	go startServerApi(server)
 
@@ -38,11 +45,17 @@ func main() {
 		log.Printf("Adding service %s at path %s", service.Name, formattedPath)
 		http.HandleFunc(formattedPath, func(w http.ResponseWriter, reqSrc *http.Request) {
 
-			task := service.NextTask()
+			task, err := service.NextTask()
+			if err != nil {
+				w.WriteHeader(404)
+				fmt.Println(err)
+				return
+			}
 
 			start := time.Now()
-			req, err := http.NewRequest(reqSrc.Method, fmt.Sprintf("%s%s", task.Address, formattedPath), reqSrc.Body)
+			req, err := http.NewRequest(reqSrc.Method, fmt.Sprintf("%s%s%s", task.Address, task.TaskPath, formattedPath), reqSrc.Body)
 			if err != nil {
+				w.WriteHeader(500)
 				fmt.Println(err)
 				return
 			}
@@ -52,18 +65,24 @@ func main() {
 
 			resp, err := client.Do(req)
 			if err != nil {
+				w.WriteHeader(500)
 				fmt.Println(err)
 				return
 			}
 
 			fmt.Println("Request took", time.Now().Sub(start))
 			defer resp.Body.Close()
-			// TODO Requesting is tooking so long(only in windows), 1ms without balancer vs 300ms with balancer
-			// Maybe trying with standart TCP connection ou customizing http client
+			// TODO Request is tooking too long(only in windows) to complete, 1ms without balancer vs 300ms with balancer for python static file server
+			// this behavior isn't seen in a simple http server written in go. Must check for how python deal with this requests, maybe trying to run from a netcat
+			// with http request send as a file through pipeline like [cat http_request | nc localhost 8000]
+			// Another approach may be trying with standart TCP connection
 
+			w.WriteHeader(resp.StatusCode)
 			_, err = io.Copy(w, resp.Body)
 			if err != nil {
-				log.Fatal(err)
+				w.WriteHeader(500)
+				fmt.Println(err)
+				return
 			}
 
 			log.Printf("Request received at %s with method [%s] and host [%s] and URL [%s] and cookies %s", req.RequestURI, req.Method, req.Host, req.URL, req.Cookies())
