@@ -8,7 +8,6 @@ import (
 func normalizePath(path string) string {
 
 	if path[len(path)-1] != '/' {
-		log.Println("Formatou!")
 		return fmt.Sprintf("%s%s", path, "/")
 	}
 
