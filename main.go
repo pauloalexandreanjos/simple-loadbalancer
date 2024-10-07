@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/joho/godotenv"
@@ -18,6 +19,8 @@ const dateFormat = "02/01/2006 15:04:05"
 
 var server *models.Server
 
+const ADDRBALANCER = ":3001"
+
 func main() {
 
 	godotenv.Load()
@@ -26,12 +29,6 @@ func main() {
 
 	server = models.NewServer("My Simple Loadbalancer")
 	server.MockService()
-	server.MockTask()
-	server.MockTask()
-	server.MockTask()
-	server.MockTask()
-	server.MockTask()
-	server.MockTask()
 	server.MockTask()
 
 	go startServerApi(server)
@@ -52,8 +49,13 @@ func main() {
 				return
 			}
 
+			reqTargetUrl := strings.Replace(reqSrc.RequestURI, service.Path, "/", 1)
+			myString := fmt.Sprintf("%s%s%s", task.Address, task.TaskPath, reqTargetUrl)
+
+			fmt.Printf("Requesting %s but url is %s\n", myString, reqSrc.URL.Path)
+
 			start := time.Now()
-			req, err := http.NewRequest(reqSrc.Method, fmt.Sprintf("%s%s%s", task.Address, task.TaskPath, formattedPath), reqSrc.Body)
+			req, err := http.NewRequest(reqSrc.Method, myString, reqSrc.Body)
 			if err != nil {
 				w.WriteHeader(500)
 				fmt.Println(err)
@@ -70,7 +72,7 @@ func main() {
 				return
 			}
 
-			fmt.Println("Request took", time.Now().Sub(start))
+			fmt.Println("Request took", time.Since(start))
 			defer resp.Body.Close()
 			// TODO Request is tooking too long(only in windows) to complete, 1ms without balancer vs 300ms with balancer for python static file server
 			// this behavior isn't seen in a simple http server written in go. Must check for how python deal with this requests, maybe trying to run from a netcat
@@ -89,10 +91,10 @@ func main() {
 		})
 	}
 
-	testRedis()
+	go testRedis()
 
-	log.Println("Started at", time.Now().Format(dateFormat), "!", "Running...")
-	err := http.ListenAndServe(":3001", nil)
+	log.Printf("Started at address %s in %s! Running...", ADDRBALANCER, time.Now().Format(dateFormat))
+	err := http.ListenAndServe(ADDRBALANCER, nil)
 	if err != nil {
 		log.Fatal(err)
 	}

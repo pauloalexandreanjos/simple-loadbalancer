@@ -10,16 +10,16 @@ type TaskStatus int16
 
 const (
 	LoadBalancer ServiceType = 0
-	StaticRoute              = 1
-	StaticFiles              = 2
+	StaticRoute  ServiceType = 1
+	StaticFiles  ServiceType = 2
 )
 
 const (
 	Unknown  TaskStatus = 0
-	Healthy             = 1
-	Degraded            = 2
-	NotReady            = 3
-	Live                = 4
+	Healthy  TaskStatus = 1
+	Degraded TaskStatus = 2
+	NotReady TaskStatus = 3
+	Live     TaskStatus = 4
 )
 
 type Server struct {

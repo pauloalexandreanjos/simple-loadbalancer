@@ -11,7 +11,7 @@ func (server *Server) MockService() {
 		Id:       "be2d3f4c-eec7-4cab-a782-6c262e6f04d0",
 		Name:     "My Service V1",
 		Token:    "my-service-token_v1",
-		Path:     "/",
+		Path:     "/asdf/",
 		Tasks:    make([]*Task, 0),
 		LastTask: -1,
 		Rules:    make([]*Rule, 0),

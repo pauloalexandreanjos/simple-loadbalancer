@@ -19,10 +19,12 @@ type Register struct {
 	HealthUrl    string `json:"healthUrl"`
 }
 
+const ADDR = ":4545"
+
 func startServerApi(server *models.Server) {
 	mux := http.NewServeMux()
 
-	log.Println("Starting API...")
+	log.Printf("Starting API on address %s...\n", ADDR)
 	mux.HandleFunc("/ping", func(w http.ResponseWriter, req *http.Request) {
 		log.Println("Received ping / sending pong")
 		w.Write([]byte("pong"))
@@ -32,7 +34,7 @@ func startServerApi(server *models.Server) {
 	mux.HandleFunc("/status", handleStatus)
 	mux.HandleFunc("/nodes", handleNodes)
 
-	http.ListenAndServe(":4545", mux)
+	http.ListenAndServe(ADDR, mux)
 }
 
 func handleRegister(w http.ResponseWriter, req *http.Request) {
@@ -73,6 +75,13 @@ func handleStatus(w http.ResponseWriter, req *http.Request) {
 
 func handleNodes(w http.ResponseWriter, req *http.Request) {
 
+	result, err := json.Marshal(server.Services)
+	if err != nil {
+		fmt.Fprintf(w, "Erro, não é possivel mostrar os serviços")
+		return
+	}
+
+	fmt.Fprint(w, string(result))
 }
 
 func formatAddress(remoteAddress string, port string, schema string) string {
